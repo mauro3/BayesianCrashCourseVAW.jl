@@ -1,7 +1,6 @@
 # TODO
 # 1. Implement likelyhood
 # 2. Filter the data to remove borders of the glacier as per Huss et al 2010
-# 3. re-calc area of the glacier
 
 using DelimitedFiles, GLMakie
 
@@ -27,41 +26,50 @@ function forward_model(H0, B, A, Pref, Tref, zref, dP_dz, dT_dz)
     # fixed surface mass balance parameters
     m = 1000.0 # melt rate factor (mm a⁻¹ C⁻¹)
 
-    # fixed dh-model parameters
+    # fixed dh-model parameters for large valley glaciers
     a = -0.02
     b = 0.12
     c = 0.0
     g = 6
 
     # numerics
-    nt = 20 # number of time steps
+    nt = 8 # number of time steps
     dt = 1.0 # time step (a)
 
     # time loop
     H = copy(H0)
+    time = 0
     for it in 1:nt
+        time = it*dt
         # precipitation rate
         P = glacier_P.(H, zref, Pref, dP_dz) # mm / a
 
         # temperature
         T = glacier_T.(H, zref, Tref, dT_dz) # C
 
+        icemask = H.>B
+        @show sum(icemask)
+        sum(icemask)==0 && break
         # annual mass balance
-@show        MB = rhow .* A .* (H.>B) .* glacier_mb.(P, T, m) .* 1e-3 # kg / a
-@show it, sum(H.>B)
+        MB = rhow .* A .* icemask .* glacier_mb.(P, T, m) .* 1e-3 # kg / a
         # integrate over glacier and over time step
-       @show Ba = sum(MB) * dt
+        Ba = sum(MB) * dt
+        @show it, Ba
 
-        hmin, hmax = extrema(H)
+        hmin, hmax = extrema(H[icemask])
         hr = (hmax .- H) ./ (hmax - hmin)
         dh = glacier_dh.(hr, a, b, c, g)
 
-        fs = Ba / (rhoi * sum(dh .* A)) # m
+        fs = Ba / (rhoi * sum(dh .* A .* icemask)) # m
 
-        H .= max.(H .+ fs .* dh, B)
+        dhh = H .- max.(H .+ fs .* dh .* icemask, B)
+        a, b = sum(fs .* dh .* A .* icemask) * rhoi, sum(dhh.*A.*rhoi) 
+        @show (Ba-a)/Ba, (Ba-b)/Ba
+
+        H .= max.(H .+ fs .* dh .* icemask, B)
     end
 
-    return H
+    return H, time
 end
 
 preprocess_flowline("scripts/flowline_rhone_2007.txt", "scripts/rhone_2007.txt")
@@ -80,7 +88,8 @@ b = 0.12
 c = 0.0
 g = 6
 
-hmin, hmax = extrema(surface)
+icemask = H.>B
+hmin, hmax = extrema(surface[icemask])
 hr = (hmax .- surface) ./ (hmax - hmin)
 dh = glacier_dh.(hr, a, b, c, g)
 
@@ -93,7 +102,7 @@ y = glacier_dh.(x, a, b, c, g)
         T = glacier_T.(surface, zref, Tref, dT_dz) # C
 glacier_mb.(P, T, m)
 
-@time surface1 = forward_model(surface, bed, area, Pref, Tref, zref, dP_dz, dT_dz)
+@time surface1, tt = forward_model(surface, bed, area, Pref, Tref, zref, dP_dz, dT_dz)
 
 fig = Figure(size=(600, 300))
 axs = (Axis(fig[1, 1]; yreversed=true),
