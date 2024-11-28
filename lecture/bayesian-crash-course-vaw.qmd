@@ -11,7 +11,7 @@ julia:
 format:
   revealjs:
     incremental: false
-    logo: wsl-eth-logo.png
+    logo: figs/wsl-eth-logo.png
     theme: moon
     css: logo.css 
     smaller: true
@@ -101,6 +101,11 @@ Invert for parameters of R-channel model given our measurements
 :::
 ::::
 
+## Disclaimer
+
+- I am not a specialist on this, let alone a statistician, merely a user
+- this presentation is a bit less clear than I was hoping... good luck!
+
 # Terminology
 
 ## Terminology: Uncertainty vs. Errors
@@ -108,8 +113,8 @@ Invert for parameters of R-channel model given our measurements
 - **Error**: discrepancy between model / measurement and reality
   - typically we don't actually know the error (as the truth is unknown)
   - examples: 
-    - data error: instrument precision limits
-    - numerical error: difference between numerical model result and true model solution
+    - data error: instrument precision limits, noise, etc
+    - numerical error: difference between numerical model result and true solution
 - **Uncertainty**: lack of complete knowledge about a system or its parameters
   - typically given as a probability distribution
   - errors can be conceptualized as random draws from this distribution
@@ -139,9 +144,9 @@ A **probabilistic framework** quantifies uncertainty, enabling us to model error
 :::
 :::
 
-::: {.fragment}
+. . .
+
  Ideally we want to quantify both types...
-:::
 
 ## Terminology: forward vs inverse models
 
@@ -182,37 +187,41 @@ If $y = x^2$ and $\sigma_x = 0.1$:
 
 $\sigma_y = 2x \cdot \sigma_x = 0.2 x$
 
+. . .
 
-
-::: {.fragment}
 **Note:** this linearises the function and thus is only valid for linear functions or close the the point of evaluation.
-:::
 
 ## Monte Carlo Uncertainty Propagation
 
-Monte Carlo (MC) methods propagate uncertainty by creating many input parameter sets by **sampling the input distributions** and running the forward model for each set.
+Monte Carlo (MC) methods propagate uncertainty by creating many input parameter sets by **sampling the input's distributions** and running the forward model for each set.
 
-### Key Steps:
+<br>
+
+**Key Steps:**
+
 1. define **uncertainty distributions** for each input parameter
    - example: $\mathcal{N}(\mu, \sigma)$, $\text{Uniform}(a, b)$
 2. **randomly sample** input parameters from these distributions
 3. run the forward model to calculate the corresponding outputs
 4. analyze the **distribution of the outputs** for uncertainty in results
 
-### Advantages:
+
+**Pros:**
+
 - handles **nonlinear models** and correlated inputs
 - any form of input distribution (not limited to Gaussian)
 
 
 ## **Julia Code Example: Monte Carlo Uncertainty Propagation**
 
-#### Example Problem:
 A glacier mass-balance model calculates annual mass balance at a location on the glacier, $MB$. 
 In gereral it would look something like:
 
 $MB(P, T, m, ...) = f(P, T, m, ..)$
 
 where $f$ is some, maybe complicated, function.  
+
+<br>
 
 ::: {.fragment}
 For now we take this simple model:
@@ -221,9 +230,9 @@ For now we take this simple model:
   
 where:
 
-  - $P$: Snow precipitation (uncertain, modeled as $\mathcal{N}(1000, 100)$).
-  - $T$: Annual temperature (uncertain, $\mathcal{N}(2, 0.5)$).
-  - $m$: Melt factor ($10.0$, fixed).
+  - $P$: solid precipitation (uncertain, modeled as $\mathcal{N}(1000, 100)$).
+  - $T$: mean annual temperature (uncertain, $\mathcal{N}(2, 0.5)$).
+  - $m$: melt factor ($10.0$, fixed).
 :::
 ---
 
@@ -235,13 +244,13 @@ where:
 using Distributions, Random, Statistics, CairoMakie # for stats and plotting
 
 # Define the forward model
-glacier_mb(P, T, f) = P + T*f
+glacier_mb(P, T, m) = P - T*m
 
 # Define input distributions
 P_dist = Normal(1000, 100)  # Snow precipitation distribution (mean=1000mm, std=100mm)
 T_dist = Normal(2, 0.5)     # Annual temperature distribution (mean=2°C, std=0.5°C)
 # Fixed melt factor
-f = 10.0
+m = 200.0
 
 # Monte Carlo sampling
 num_samples = 10000
@@ -249,7 +258,7 @@ P_samples = rand(P_dist, num_samples)  # Sample precipitation
 T_samples = rand(T_dist, num_samples)  # Sample temperature
 
 # Compute mb for each sample
-mb_results = [glacier_mb(P, T, f) for (P, T) in zip(P_samples, T_samples)]
+mb_results = [glacier_mb(P, T, m) for (P, T) in zip(P_samples, T_samples)]
 
 # Analyze results
 mean_mb, std_mb  = mean(mb_results), std(mb_results)
@@ -267,9 +276,9 @@ println("Standard deviation of MB: $(std_mb) mm")
 #| fig-alt: "A Gaussian shaped histogram"
 #| echo: true  # Show full code and comments
 # Plot results
-f = Figure()
-ax = Axis(f[1, 1], title="Monte Carlo Mass Balance Distribution", xlabel="Mass balance (mm)", ylabel="Frequency")
-hist!(ax, mb_results, bins=50, color=:blue, strokewidth=0.0,); f
+fig = Figure()
+ax = Axis(fig[1, 1], title="Monte Carlo Mass Balance Distribution", xlabel="Mass balance (mm)", ylabel="Frequency")
+hist!(ax, mb_results, bins=50, color=:blue, strokewidth=0.0,); fig
 ```
 
 # Inversions
@@ -277,36 +286,112 @@ hist!(ax, mb_results, bins=50, color=:blue, strokewidth=0.0,); f
 
 Essentially, when our model produces output for which we have measurements and we want to use that to constrain the model parameters.
 
-- "parameters" is used here in the sense of any model input
+- "parameters" is used here in the sense of *any model input*
   - for example: ice density, DEM, numerical stuff, magic constants, etc
-  - note that in the scheme presented here, any paramters which have uncertainty need to be fitted; i.e. no "straight" MC propagation of errors
-- inversions are in general ill posed and need regularisation.  This is done in Bayesian inversion with so-called priors
+  - note that in the scheme presented here, any parameters which have uncertainty need to be fitted; i.e. no "straight" MC propagation of errors
+- inversions are in general ill posed and need regularisation.  This is done in Bayesian inversion with so-called priors (but they can be used for other things too)
 
 ## Prior knowledge, aka "Priors"
-Before we start to run our inversion we typically have some knowledge of the model parameters:
+Before we start to run our inversion we typically already have some knowledge of the model parameters:
 
 - direct measurements of a parameter, e.g. the DEM and its uncertainty
 - inversions of a parameter from a previous study
 - physics and other fundamental constraints
 - expert opinion...
 
-::: {.fragment}
-Note that this is what we used in 
-:::
-::: {.fragment}
-How can we take this into account?
-:::
+. . .
 
-## Forward model and how to test it with data
+<br>
+Note that this is what we used in the uncertainty forward propagation example: just our prior knowledge of the parameters. 
+
+## Prior: $p(\theta)$
+
+Formally, priors are written as
+
+$p(\theta)$
+
+where $p$ is a probability density function (PDF) and $\theta$ is the vector of parameters.
+
+. . .
+
+<br>
+So for our previous example:
+
+$\theta = [P, T]$,
+
+remember $m$ was fixed, $P\sim N(1000,100)$ and $T\sim N(2,0.5)$.
+
+. . .
+
+And as our normal priors on $P$ and $T$ are uncorrelated the PDF of the prior is:
+
+$p(\theta) = \frac{1}{\sqrt{2\pi100^2}} e^{-\frac{(\theta_P-1000)^2}{2\cdot 100^2}} \cdot \frac{1}{\sqrt{2\pi0.5^2}} e^{-\frac{(\theta_T-2)^2}{2 \cdot 0.5^2}}$.
+
+## Forward model and how to test it with data, aka the likelihood
 
 Going back to our mass balance model: it has the form
 
-$MB(T,P,f,...) = f(T,P,f,...)$ 
+$MB(T,P,m,...) = f(T,P,m,...)$ 
 
-where above this function was super simple.  However it may well be more complicatated, say taking DEMs, windfields, etc as inputs.
+(where above $m$ was super simple.  However $f$ may well be more complicated, say taking DEMs, wind fields, etc as inputs.)
 
-Now we have data from direct glaciological observations 
+. . .
 
+Now we have data for $MB$ from direct glaciological observations: **how do we incorporate that data?**
+
+. . .
+
+--> Fit the model to the data.  
+
+- For this we need a cost-function, objective-function, etc.  In Bayesian inversion this is the **likelihood**.
+
+## Likelihood: $p(d|\theta)$
+
+To compare the data to the forward model output, an assumption on how the errors are distributed.
+This is captured in the likelihood $p(d|\theta)$, which reads something as:
+
+*"the likelihood of measuring the data $d$ given our forward model run with parameters $\theta$ and a stochastic model of the errors"*
+
+. . .
+
+Usually, for lack of better knowledge, a normal distribution is assumed for the errors:
+
+$p(d | \theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma_i^2}} e^{-\frac{(F(\theta)_i - d_i)^2}{2\sigma_i^2}}$
+
+for the case of $n$ uncorrelated errors, where $F(\theta)$ is the forward model.
+
+. . .
+
+<br>
+For our example this would be 
+
+$p(d | \theta) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(MB(\theta)_i - d)^2}{2\sigma^2}}$
+
+with a single observation of the mass-balance $d$.
+
+## Bayes' theorem
+### Combining prior and knowledge gained from modelling
+
+We now want to combine the prior $p(\theta)$ and the likelihood $p(d|\theta)$... Bayes' theorem to the rescue!
+
+Stated in terms of PDFs:
+
+$p(\theta|d) = \frac{p(d|\theta) \cdot p(\theta)}{p(d)}$
+
+where you will spot the prior and likelihood as well as the marginal likelihood $p(d)$ and the posterior $p(\theta|d)$.
+
+<br>
+
+:::{.fragment}
+**The posterior is what we are after**, it tells us the probability of a set of parameters being appropriate given our prior knowledge, the forward model and an error model.
+:::
+
+## Worked example
+
+We will now continue with our simple mass balance example from before.
+
+
+## Forecasts
 
 ## Summary
 :::: {.columns}
