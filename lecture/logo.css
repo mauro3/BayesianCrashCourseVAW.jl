@@ -1,0 +1,15 @@
+.reveal .slide-logo {
+  height: 80px !important;
+  /* width: 100px !important; */
+  /* max-width: unset !important; */
+  max-height: unset !important;
+}
+
+.reveal h1, 
+.reveal h2, 
+.reveal h3, 
+.reveal h4, 
+.reveal h5, 
+.reveal h6 {
+  text-transform: none; /* Prevent uppercase transformation */
+}

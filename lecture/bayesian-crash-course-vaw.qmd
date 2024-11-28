@@ -1,0 +1,333 @@
+---
+title: "Crash course in Bayesian inversion"
+bibliography: 2024-Bayesian-Crash-Course-VAW.bib
+link-citations: true
+csl: journal-of-glaciology.csl
+execute:
+  enabled: true
+engine: julia
+julia:
+  exeflags: ["--project=@."]
+format:
+  revealjs:
+    incremental: false
+    logo: wsl-eth-logo.png
+    theme: moon
+    css: logo.css 
+    smaller: true
+author: "Mauro Werder"
+---
+
+# Bayesian what?
+
+## Bayesian inversion
+**Bayesian inversion** is a statistical method for estimating unknown model parameters including their uncertainty.
+
+Using Bayes' theorem, it fits a forward model to observations whilst also taking into account prior information.
+
+## Examples: @Brinkerhoff.etal2021
+
+:::: {.columns}
+
+::: {.column width="40%"} 
+
+::: {style="font-size: 100%;"}
+Looks at coupled dynamics of ice flow and subglacial drainage
+
+- first study of a coupled ice-flow (lastest generation) drainage system model inversion
+- uses a surrogate forward model
+- Bayesian inversion based around MCMC (Markov chain Monte Carlo)
+:::
+:::
+
+::: {.column width="60%"}
+![Fig: Model region in West Greenland]( ./figs/brinkerhoff2022-1.png )
+:::
+
+::::
+
+## Examples: @Brinkerhoff.etal2021
+
+:::: {.columns}
+::: {.column width="40%"} 
+::: {style="font-size: 100%;"}
+- inversion estimates eight parameters
+- and their distributions
+
+[explain what that plot shows]
+:::
+:::
+
+::: {.column width="60%"}
+![]( ./figs/brinkerhoff2022-2.png )
+:::
+::::
+
+## Examples: @Werder.etal2020
+
+:::: {.columns}
+::: {.column width="40%"} 
+::: {style="font-size: 100%;"}
+Invert for ice thickness given radar and flow speed observations:
+
+- uses the @Farinotti.etal2009b ice thickness model as forward model
+- fits observations of thickness and flow speed by tuning various parameters
+- this is what got me started with Bayesian inference / inversions
+:::
+:::
+::: {.column width="60%"}
+![Fig: inversion for Unteraargletscher]( figs/werder2020-1.png )
+:::
+::::
+ 
+## Examples: @Werder.etal2020
+![Fig: inversion for Unteraargletscher: comparison to data]( figs/werder2020-2.png )
+
+## Examples: @Pohle.etal2022
+:::: {.columns}
+::: {.column width="40%"} 
+::: {style="font-size: 100%;"}
+Invert for parameters of R-channel model given our measurements
+
+- forward models: two simple R-channel models
+- one is fitted, one errors are just forward propagated
+- fit to channel size S
+- fit with temperature gradient and initial S
+- comparison between the predicted temperature gradients 
+:::
+:::
+::: {.column width="60%"}
+![]( figs/pohle2022-1.png )
+:::
+::::
+
+# Terminology
+
+## Terminology: Uncertainty vs. Errors
+
+- **Error**: discrepancy between model / measurement and reality
+  - typically we don't actually know the error (as the truth is unknown)
+  - examples: 
+    - data error: instrument precision limits
+    - numerical error: difference between numerical model result and true model solution
+- **Uncertainty**: lack of complete knowledge about a system or its parameters
+  - typically given as a probability distribution
+  - errors can be conceptualized as random draws from this distribution
+
+A **probabilistic framework** quantifies uncertainty, enabling us to model errors probabilistically.
+
+## Terminology: Types of Uncertainty
+::: {.columns}
+::: {.column width="50%"}
+### **Aleatoric Uncertainty**
+- stochastic variability inherent to a process
+- also called **irreducible uncertainty**
+- Examples:
+  - atmospheric variability
+  - sensor noise
+  - quantum fluctuations
+:::
+::: {.column width="50%"}
+
+### **Epistemic Uncertainty**
+- due to lack of knowledge
+- also called **systematic uncertainty**
+- can be reduced **with better data or models**
+- examples:
+  - poorly constrained model parameters
+  - sparse glacier field measurements
+:::
+:::
+
+::: {.fragment}
+ Ideally we want to quantify both types...
+:::
+
+## Terminology: forward vs inverse models
+
+A **forward model** is a model as we know and love it: 
+
+- feed it input and it spits out a result
+- typically that is the kind of model we create when envisaging to model a process
+
+An **inverse model** is the combination of:
+
+- a forward model
+- and a way to fit that model's output to observations / data
+
+# Forward uncertainty propagation
+
+## When is forward uncertainty propagation enough?
+
+Forward propagation is the only possibility when:
+
+- model input parameters and their uncertainty are know or can be estimated (guesses, expert judgement,etc.)
+- there are no observation/data to fit to the outputs of the forward model
+
+In this case, the focus is on propagating known input uncertainty through the forward model to quantify **uncertainty in the outputs**.
+
+## Classical Error Propagation
+
+- Assumes **small, uncorrelated uncertainties** and **linear relationships**.
+- Uses **partial derivatives** to propagate input uncertainty through the model.
+  
+**1D Example:**
+
+For a function $y = f(x)$, where $\sigma_x$ is the uncertainty in $x$:
+
+$\sigma_y(x_0) = \frac{\partial f}{\partial x} \Big|_{x=x_0} \cdot \sigma_x(x_0)$\  
+
+**Example:**
+If $y = x^2$ and $\sigma_x = 0.1$:
+
+$\sigma_y = 2x \cdot \sigma_x = 0.2 x$
+
+
+
+::: {.fragment}
+**Note:** this linearises the function and thus is only valid for linear functions or close the the point of evaluation.
+:::
+
+## Monte Carlo Uncertainty Propagation
+
+Monte Carlo (MC) methods propagate uncertainty by creating many input parameter sets by **sampling the input distributions** and running the forward model for each set.
+
+### Key Steps:
+1. define **uncertainty distributions** for each input parameter
+   - example: $\mathcal{N}(\mu, \sigma)$, $\text{Uniform}(a, b)$
+2. **randomly sample** input parameters from these distributions
+3. run the forward model to calculate the corresponding outputs
+4. analyze the **distribution of the outputs** for uncertainty in results
+
+### Advantages:
+- handles **nonlinear models** and correlated inputs
+- any form of input distribution (not limited to Gaussian)
+
+
+## **Julia Code Example: Monte Carlo Uncertainty Propagation**
+
+#### Example Problem:
+A glacier mass-balance model calculates annual mass balance at a location on the glacier, $MB$. 
+In gereral it would look something like:
+
+$MB(P, T, m, ...) = f(P, T, m, ..)$
+
+where $f$ is some, maybe complicated, function.  
+
+::: {.fragment}
+For now we take this simple model:
+
+  $MB = P + T \cdot m$
+  
+where:
+
+  - $P$: Snow precipitation (uncertain, modeled as $\mathcal{N}(1000, 100)$).
+  - $T$: Annual temperature (uncertain, $\mathcal{N}(2, 0.5)$).
+  - $m$: Melt factor ($10.0$, fixed).
+:::
+---
+
+**Julia implementation**
+
+```{julia}
+#| label: monte-carlo-propagation
+#| echo: true  # Show full code and comments
+using Distributions, Random, Statistics, CairoMakie # for stats and plotting
+
+# Define the forward model
+glacier_mb(P, T, f) = P + T*f
+
+# Define input distributions
+P_dist = Normal(1000, 100)  # Snow precipitation distribution (mean=1000mm, std=100mm)
+T_dist = Normal(2, 0.5)     # Annual temperature distribution (mean=2°C, std=0.5°C)
+# Fixed melt factor
+f = 10.0
+
+# Monte Carlo sampling
+num_samples = 10000
+P_samples = rand(P_dist, num_samples)  # Sample precipitation
+T_samples = rand(T_dist, num_samples)  # Sample temperature
+
+# Compute mb for each sample
+mb_results = [glacier_mb(P, T, f) for (P, T) in zip(P_samples, T_samples)]
+
+# Analyze results
+mean_mb, std_mb  = mean(mb_results), std(mb_results)
+# Print results
+println("\nMean annual mass balance: $(mean_mb) mm")
+println("Standard deviation of MB: $(std_mb) mm")
+```
+
+---
+
+**Output plot**
+
+```{julia}
+#| fig-cap: "Distribution of simulated melt"
+#| fig-alt: "A Gaussian shaped histogram"
+#| echo: true  # Show full code and comments
+# Plot results
+f = Figure()
+ax = Axis(f[1, 1], title="Monte Carlo Mass Balance Distribution", xlabel="Mass balance (mm)", ylabel="Frequency")
+hist!(ax, mb_results, bins=50, color=:blue, strokewidth=0.0,); f
+```
+
+# Inversions
+## When do we need inversions?
+
+Essentially, when our model produces output for which we have measurements and we want to use that to constrain the model parameters.
+
+- "parameters" is used here in the sense of any model input
+  - for example: ice density, DEM, numerical stuff, magic constants, etc
+  - note that in the scheme presented here, any paramters which have uncertainty need to be fitted; i.e. no "straight" MC propagation of errors
+- inversions are in general ill posed and need regularisation.  This is done in Bayesian inversion with so-called priors
+
+## Prior knowledge, aka "Priors"
+Before we start to run our inversion we typically have some knowledge of the model parameters:
+
+- direct measurements of a parameter, e.g. the DEM and its uncertainty
+- inversions of a parameter from a previous study
+- physics and other fundamental constraints
+- expert opinion...
+
+::: {.fragment}
+Note that this is what we used in 
+:::
+::: {.fragment}
+How can we take this into account?
+:::
+
+## Forward model and how to test it with data
+
+Going back to our mass balance model: it has the form
+
+$MB(T,P,f,...) = f(T,P,f,...)$ 
+
+where above this function was super simple.  However it may well be more complicatated, say taking DEMs, windfields, etc as inputs.
+
+Now we have data from direct glaciological observations 
+
+
+## Summary
+:::: {.columns}
+::: {.column width="50%"} 
+::: {.incremental}
+- taking uncertainties into account is important
+- forward propagation of uncertainties is often good enough (i.e. no need to fit a model)
+  - use MC scheme
+- Bayesian inference is a nice inversion scheme
+  - an MCMC-based approach will give the best fit as well as uncertainties
+  - however, maximum posterior evaluation can also be done; this is then pretty equivalent to other inversions
+- the plan for this afternoon is to code such an inversion scheme
+:::
+:::
+::: {.fragment}
+ Thanks!
+:::
+::: {.column width="50%"} 
+![]( ./figs/brinkerhoff2022-2.png )
+:::
+::::
+---
+
+# References
