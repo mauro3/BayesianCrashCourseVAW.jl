@@ -258,10 +258,10 @@ P_samples = rand(P_dist, num_samples)  # Sample precipitation
 T_samples = rand(T_dist, num_samples)  # Sample temperature
 
 # Compute mb for each sample
-mb_results = [glacier_mb(P, T, m) for (P, T) in zip(P_samples, T_samples)]
+mb_samples_MC = [glacier_mb(P, T, m) for (P, T) in zip(P_samples, T_samples)]
 
 # Analyze results
-mean_mb, std_mb  = mean(mb_results), std(mb_results)
+mean_mb, std_mb  = mean(mb_samples_MC), std(mb_samples_MC)
 # Print results
 println("\nMean annual mass balance: $(mean_mb) mm")
 println("Standard deviation of MB: $(std_mb) mm")
@@ -278,7 +278,7 @@ println("Standard deviation of MB: $(std_mb) mm")
 # Plot results
 fig = Figure()
 ax = Axis(fig[1, 1], title="Monte Carlo Mass Balance Distribution", xlabel="Mass balance (mm)", ylabel="Frequency")
-hist!(ax, mb_results, bins=50, color=:blue, strokewidth=0.0,); fig
+hist!(ax, mb_samples_MC, bins=50, color=:blue, strokewidth=0.0,); fig
 ```
 
 # Inversions
@@ -387,15 +387,165 @@ where you will spot the prior and likelihood as well as the marginal likelihood 
 :::
 
 ## Worked example
+We will now continue with our simple mass balance example from before (this uses a package for more compact code, we'll do it from scratch this afternoon).
 
-We will now continue with our simple mass balance example from before.
+```{julia}
+#| label: bayes-inversion
+#| echo: true  # Show full code and comments
+using Turing # using a MCMC package, and plotting
 
+@model function bayesian_glacier_model(mb_measured, mb_uncertainty)
+    # Priors
+    P ~ Normal(1000, 100)  # Precipitation
+    T ~ Normal(2, 0.5)     # Temperature
+    # Fixed melt factor
+    m = 200.0
+    
+    # Likelihood
+    mb = P - T * m
+    mb_measured ~ Normal(mb, mb_uncertainty)
+end
+
+# Define model and draw samples from the posterior
+model = bayesian_glacier_model(400.0, 100.0)
+chain = sample(model, NUTS(0.65), 1000, progress=false);
+summarystats(chain)
+```
+
+---
+
+```{julia}
+#| fig-cap: "Prior (green) vs posterior (blue) distirbution of P (left) and T (right)"
+#| echo: false  # Show full code and comments
+# Plot prior vs posterior distributions
+# Extract samples for precipitation (P) and temperature (T)
+P_samples, T_samples = chain[:P][:], chain[:T][:] # Samples of P and T
+# make samples from the prior to compare
+P_samples_prior,T_samples_prior = rand(Normal(1000, 100), 10000), rand(Normal(2, 0.5), 10000)
+
+# Plot precipitation posterior
+fig = Figure(); ax1 = Axis(fig[1, 1], title="Posterior Distribution: Precipitation (P)", xlabel="P (mm)", ylabel="Density")
+hist!(ax1, P_samples_prior, bins=50, normalization=:pdf, color=:green, strokewidth=0.0)
+hist!(ax1, P_samples, bins=50, normalization=:pdf, color=:blue, strokewidth=0.0)
+# Plot temperature posterior
+ax2 = Axis(fig[1, 2], title="Posterior Distribution: Temperature (T)", xlabel="T (°C)", ylabel="Density")
+hist!(ax2, T_samples_prior, bins=50, normalization=:pdf, color=:green, strokewidth=0.0)
+hist!(ax2, T_samples, bins=50, normalization=:pdf, color=:blue, strokewidth=0.0); fig
+```
+
+The histograms show how our prior knowledge of precipitation and temperature is updated by the fitting to the measured mass balance.
 
 ## Forecasts
+
+We can also look at what the model then "forecasts" for the actual value of the mass balance, taking prior knowledge into account as well.
+```{julia}
+#| fig-cap: "Prior (green) vs posterior (blue) distirbution of mass balance"
+#| echo: false  # Show full code and comments
+# Compute mass balance for each posterior sample
+using Colors
+mb_samples = glacier_mb.(P_samples, T_samples, m)[:]
+fig = Figure(); ax = Axis(fig[1, 1], title="Mass Balance Posterior Distribution",
+          xlabel="Mass Balance (mm)", ylabel="Density")
+hist!(ax, mb_samples_MC, bins=50, normalization=:pdf, color=:green, strokewidth=0.0)
+hist!(ax, mb_samples, bins=50, normalization=:pdf, color=:blue, strokewidth=0.0); fig
+```
+
+## Joint probabilities
+
+```{julia}
+# Define labels and pairwise combinations
+variables = ["P (Precipitation)", "T (Temperature)", "mb (Mass Balance)"]
+samples = (P_samples, T_samples, mb_samples)
+
+# Compute correlation matrix
+correlations = [cor(samples[i], samples[j]) for i in 1:3, j in 1:3]  # Pairwise correlations
+
+# Create a grid figure for a 3x3 matrix
+fig = Figure()
+
+# Loop over each plot position in the 3x3 grid
+for i in 1:3
+    for j in 1:3
+        ax = fig[i, j] = Axis(fig[i, j], 
+            xlabel=i == 3 ? variables[j] : "",  # Add xlabel to the bottom row
+            ylabel=j == 1 ? variables[i] : "",  # Add ylabel to the left column
+            xticklabelsize=8,
+            yticklabelsize=8)
+
+        if i == j
+            # Diagonal: Marginal distribution (histogram)
+            hist!(ax, samples[i], bins=50, normalization=:pdf, color=:blue, strokewidth=0.0)
+        elseif i > j
+            # Lower triangle: Pairwise joint distribution (scatter plot)
+            scatter!(ax, samples[j], samples[i], color=:blue, markersize=2)
+        else
+            # Upper triangle: Correlation coefficient
+            corr_val = round(correlations[i, j], digits=2)
+            text!(ax, 0.5, 0.5, text=string(corr_val), fontsize=20, color=:black)
+
+           # Add colored background
+           if corr_val > 0  # Positive correlation: Green
+              poly!(ax, [0, 1, 1, 0], [0, 0, 1, 1], color=RGBA(0.8, 1.0, 0.8, abs(corr_val)))
+           else  # Negative correlation: Red
+              poly!(ax, [0, 1, 1, 0], [0, 0, 1, 1], color=RGBA(1.0, 0.8, 0.8, abs(corr_val)))
+           end
+
+            hidedecorations!(ax)  # Hide ticks and labels in the upper triangle
+        end
+    end
+end
+
+fig
+```
+The correlations are as expected, postive between T-mb and T-P and negative T-mb.  
+
+## Methods for doing Bayesian inversions
+
+**Sampling**, why sampling?
+
+- a sampler takes a PDF and returns a sample from it. The `rand` command is an example sampling from `Uniform(0,1)`
+- good to characterize high dimensional probability distributions via histograms and scatter plots
+- integration, which is needed for expectation values, etc., is just a summation away
+
+. . .
+
+**Maximum posterior estimates**
+
+- instead of sampling the posterior to get the full distribution, just finding the maximum can also be done
+- uses gradient ascent or similar and probably faster than sampling as less model evaluations are needed
+- this is largely equivalent to other types of inversions where a cost function (likelihood) with some regularisation (prior) is minimized
+
+## What is that MCMC stuff?
+
+Sampling is important not least because it can be done very efficiently via Markov chain Monte Carlo (MCMC) methods.  Thus MCMC and Bayesian inversion often is used almost interchangeably; but MCMC is really just the method used to sample.
+
+. . .
+
+**Metropolis Hastings** is the original MCMC sampler
+
+- in the example above, this "Turing"-thing uses an MCMC sampler
+- we will look at MH this afternoon
+- but nowadays often more modern samplers are used.  In particular Hamiltonian Monte Carlo methods are often used, but require calculation of the gradient of the posterior
+- we will use an affine invariant sampler, which is what I used in most of my work
+
+## Things not covered
+
+::: {.incremental}
+- the construction of the likelihood and priors are not always trivial, but I get away with being not good at it
+  - correlations should be accounted for, e.g. spatial, to ensure smoothness, avoid overfitting and not overestimate measurement contributions
+  - non informative priors: how to choose a prior such that it has no impact on the results
+- there are packages out there to do Bayesian inference, I find them impenetrable because the use some much stats jargon...
+- yes, stats jargon! Can't help you there. If you get dizzy because of it, focus on your forward model and wait for it to pass.
+- probably other things which I'm not even aware of
+:::
 
 ## Summary
 :::: {.columns}
 ::: {.column width="50%"} 
+![Brinkerhoff et al., 2022]( ./figs/brinkerhoff2022-2.png )
+:::
+::: {.column width="50%"} 
+::: {style="font-size: 90%;"}
 ::: {.incremental}
 - taking uncertainties into account is important
 - forward propagation of uncertainties is often good enough (i.e. no need to fit a model)
@@ -406,11 +556,9 @@ We will now continue with our simple mass balance example from before.
 - the plan for this afternoon is to code such an inversion scheme
 :::
 :::
+:::
 ::: {.fragment}
  Thanks!
-:::
-::: {.column width="50%"} 
-![]( ./figs/brinkerhoff2022-2.png )
 :::
 ::::
 ---
