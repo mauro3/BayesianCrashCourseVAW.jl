@@ -24,7 +24,7 @@ function forward_model(H0, B, A, Pref, Tref, zref, dP_dz, dT_dz)
     rhoi = 920.0  # ice density (kg m⁻³)
 
     # fixed surface mass balance parameters
-    m = 10.0 # melt rate factor (mm a⁻¹ C⁻¹)
+    m = 1000.0 # melt rate factor (mm a⁻¹ C⁻¹)
 
     # fixed dh-model parameters for large valley glaciers
     a = -0.02
@@ -45,14 +45,21 @@ function forward_model(H0, B, A, Pref, Tref, zref, dP_dz, dT_dz)
         # temperature
         T = glacier_T.(H, zref, Tref, dT_dz) # C
 
-        # annual mass balance
-        MB = rhow .* A .* glacier_mb.(P, T, m) .* 1e-3 # kg / a
-        # integrate over glacier and over time step
-        Ba = sum(MB) * dt
+        icemask = H .> B
 
-        hmin, hmax = extrema(H)
+        if !any(icemask)
+            break
+        end
+
+        # annual mass balance
+        MB = rhow .* A .* glacier_mb.(P, T, m) .* 1e-3 .* icemask  # kg / a
+
+        # integrate over glacier and over time step
+        Ba = -sum(MB) * dt
+
+        hmin, hmax = extrema(H[icemask])
         hr = (hmax .- H) ./ (hmax - hmin)
-        dh = glacier_dh.(hr, a, b, c, g)
+        dh = glacier_dh.(hr, a, b, c, g) .* icemask
 
         fs = Ba / (rhoi * sum(dh .* A)) # m
 
@@ -66,12 +73,12 @@ preprocess_flowline("scripts/flowline_rhone_2007.txt", "scripts/rhone_2007.txt")
 
 length, surface, bed, area = read_flowline("scripts/rhone_2007.txt")
 
-Pref = 1000.0 # mm / a
+Pref = 1000.0 # mm a⁻¹
 Tref = 0.0    # C
 
-zref  = 3100.0 # ELA
+zref  = 2500.0 # ELA
 dP_dz = 0.0
-dT_dz = -0.65 / 100 # C/m
+dT_dz = -0.65 / 100 # C m⁻¹
 
 a = -0.02
 b = 0.12
