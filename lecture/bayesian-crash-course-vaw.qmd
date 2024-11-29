@@ -12,7 +12,7 @@ format:
   revealjs:
     incremental: false
     logo: figs/wsl-eth-logo.png
-    theme: moon
+    theme: white
     css: logo.css 
     smaller: true
 author: "Mauro Werder"
@@ -574,12 +574,35 @@ Sampling is important not least because it can be done very efficiently via Mark
 - but nowadays often more modern samplers are used.  In particular Hamiltonian Monte Carlo methods are often used, but require calculation of the gradient of the posterior
 - we will use an affine invariant sampler, which is what I used in most of my work
 
+## Steps to Bayesianism
+
+- have / make a forward model
+- have some data for model parameters and outputs
+- make priors on model parameters p(\theta)$
+- make likelihood combining forward model and stochastic error model $p(d|\theta)$
+- evaluate posterior $p(\theta|d)\propto p(d|\theta) p(\theta)$
+- make forecasts with ensemble of $\theta$s
+
+## Limitations of Bayesian inversion
+
+Pros:
+
+- principled way to go about quantifying uncertainties
+- can provide both best fit and uncertainties of parameters and model forecasts
+
+Cons:
+
+- quite a few pieces need to come together to make things work
+- needs more forward model evaluations than some other inversion strategies
+- statistics is quite difficult to get into
+
 ## Things not covered
 
 ::: {.incremental}
 - the construction of the likelihood and priors are not always trivial, but I get away with being not good at it
   - correlations should be accounted for, e.g. spatial, to ensure smoothness, avoid overfitting and not overestimate measurement contributions
   - non informative priors: how to choose a prior such that it has no impact on the results
+- testing convergence of the MCMC iterations
 - there are packages out there to do Bayesian inference, I find them impenetrable because the use some much stats jargon...
 - yes, stats-jargon! Can't help you there. If you get dizzy because of it, focus on your forward model and wait for it to pass.
 - probably other things which I'm not even aware of
