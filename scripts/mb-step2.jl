@@ -48,7 +48,7 @@ function metropolis_hastings(target_pdf,   # Target PDF (unnormalized)
         
         # Decide whether to accept or reject
         u = log(rand())
-        if u < alpha
+        if u < acceptance_ratio
             current_state = proposed_state
         end
         
