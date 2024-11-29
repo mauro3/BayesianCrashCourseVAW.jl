@@ -28,3 +28,44 @@ function posterior(theta, data)
 end
 
 posterior([879, 1.5], [400, 56])
+
+#############################
+
+# Metropolis-Hastings sampler
+function metropolis_hastings(target_pdf,   # Target PDF (unnormalized)
+                             proposal,   # Proposal distribution (e.g., Normal step)
+                             initial_state, # Starting point
+                             n_samples   # Number of samples to generate
+                            )
+    current_state = initial_state
+    samples = Vector{Vector{Float64}}(undef, n_samples)
+    for i in 1:n_samples
+        # Propose a new state
+        proposed_state = proposal(current_state)
+        
+        # Compute acceptance probability
+        acceptance_ratio = target_pdf(proposed_state) - target_pdf(current_state)
+        
+        # Decide whether to accept or reject
+        u = log(rand())
+        if u < alpha
+            current_state = proposed_state
+        end
+        
+        # Store the current state
+        samples[i] = current_state
+    end
+    
+    return samples
+end
+
+# Helper function: Metropolis-Hastings with normal proposal
+function mh_with_normal_proposal(target_pdf, initial_state, n_samples, proposal_sd)
+    proposal = x -> x .+ rand(Normal(0, proposal_sd), length(x))
+    return metropolis_hastings(target_pdf, proposal, initial_state, n_samples)
+end
+
+## Use MH to sample from posterior
+# --> adjust the example_2d from mh-example.jl file:
+
+
