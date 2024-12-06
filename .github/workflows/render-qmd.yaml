@@ -3,10 +3,10 @@ name: Render and Publish Quarto Document
 on:
   push:
     branches:
-      - main  # Change this to the branch you want to trigger the workflow on.
+      - master
   pull_request:
     branches:
-      - main  # Optional, for PR builds.
+      - master
 
 jobs:
   build:
