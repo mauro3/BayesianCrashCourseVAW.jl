@@ -1,8 +1,7 @@
 # https://github.com/quarto-dev/quarto-actions/blob/main/examples/quarto-publish-example.yml
+# needs to be triggered manually
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 name: Render and Publish
 
