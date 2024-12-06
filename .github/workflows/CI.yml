@@ -37,3 +37,7 @@ jobs:
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        # this trick is needed to get glmakie to compile
+        # https://discourse.julialang.org/t/github-throws-errors-when-precompiling-glmakie/101882/10
+        with:
+          prefix: xvfb-run -s '-screen 0 1024x768x24'
