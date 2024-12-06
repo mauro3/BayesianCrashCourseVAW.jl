@@ -4,8 +4,8 @@
 
 This is a short workshop I gave at VAW on Bayesian inference.  Strucutre:
 
-- 1h lecture
-- 1/2 of hands-on
+- 1h lecture with [slides](BayesianCrashCourseVAW-website/bayesian-crash-course-vaw.html)
+- 1/2 day of hands-on
 
 # Lecture
 

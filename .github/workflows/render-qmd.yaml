@@ -42,8 +42,6 @@ jobs:
       # From https://github.com/julia-actions/setup-julia
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
-        with:
-          julia-version: '1.8'  # Specify Julia version to match your setup.
       - name: Activate Julia environment
         run: |
           julia --project=lecture -e 'using Pkg; Pkg.instantiate()'
