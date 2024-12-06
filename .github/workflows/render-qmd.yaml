@@ -1,0 +1,47 @@
+name: Render and Publish Quarto Document
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to trigger the workflow on.
+  pull_request:
+    branches:
+      - main  # Optional, for PR builds.
+
+jobs:
+  build:
+    name: Render Quarto page
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository.
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Quarto CLI to render the .qmd file.
+      - name: Set up Quarto CLI
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 'latest'
+
+      # Step 3: Set up Julia with your Project.toml environment.
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          julia-version: '1.11'  # Specify Julia version to match your setup.
+
+      - name: Activate Julia environment
+        run: |
+          julia --project=lecture -e 'using Pkg; Pkg.instantiate()'
+
+      # Step 4: Render the .qmd file.
+      - name: Render Quarto document
+        run: |
+          quarto render lecture/bayesian-crash-course-vaw.qmd
+
+      # Step 5: Upload rendered files to gh-pages.
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
