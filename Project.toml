@@ -11,7 +11,7 @@ KissMCMC = "79d62d8d-4dfd-5781-bc85-ce78e0ac132a"
 Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [compat]
-Colors = "0.12.11"
+Colors = "0.12.11, 0.13"
 Distributions = "0.25.113"
 GLMakie = "0.10.16"
 KissMCMC = "0.2.1"
