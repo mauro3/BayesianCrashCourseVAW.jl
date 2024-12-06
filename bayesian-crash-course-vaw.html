@@ -6,8 +6,8 @@
 <script src="bayesian-crash-course-vaw_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="bayesian-crash-course-vaw_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="bayesian-crash-course-vaw_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="bayesian-crash-course-vaw_files/libs/quarto-html/quarto-syntax-highlighting-b663525e4b92bb903b2199e2d401bf36.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.6.38">
+<link href="bayesian-crash-course-vaw_files/libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.6.39">
 
   <meta name="author" content="Mauro Werder">
   <title>Crash course in Bayesian inversion</title>
@@ -491,32 +491,9 @@ Mauro Werder
 <span id="cb1-23"><a href=""></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Mean annual mass balance: </span><span class="sc">$</span>(mean_mb)<span class="st"> mm"</span>)</span>
 <span id="cb1-24"><a href=""></a><span class="fu">println</span>(<span class="st">"Standard deviation of MB: </span><span class="sc">$</span>(std_mb)<span class="st"> mm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Precompiling Distributions...
-   4288.8 ms  ✓ Distributions
-  1 dependency successfully precompiled in 5 seconds. 61 already precompiled.
-Precompiling CairoMakie...
-    793.1 ms  ✓ StructArrays
-   1127.0 ms  ✓ Distributions → DistributionsChainRulesCoreExt
-    512.8 ms  ✓ StructArrays → StructArraysAdaptExt
-    522.0 ms  ✓ StructArrays → StructArraysLinearAlgebraExt
-   1330.2 ms  ✓ Distributions → DistributionsTestExt
-    678.2 ms  ✓ StructArrays → StructArraysSparseArraysExt
-    775.3 ms  ✓ StructArrays → StructArraysStaticArraysExt
-   1446.5 ms  ✓ KernelDensity
-   4254.8 ms  ✓ GeometryBasics
-   1345.5 ms  ✓ Packing
-   1632.9 ms  ✓ ShaderAbstractions
-   2282.4 ms  ✓ FreeTypeAbstraction
-   4480.7 ms  ✓ MakieCore
-   6645.1 ms  ✓ GridLayoutBase
-   6163.1 ms  ✓ MathTeXEngine
-  48334.7 ms  ✓ TiffImages
- 113556.2 ms  ✓ Makie
-  36647.1 ms  ✓ CairoMakie
-  18 dependencies successfully precompiled in 199 seconds. 252 already precompiled.
-
-Mean annual mass balance: 599.7992892352042 mm
-Standard deviation of MB: 141.67777830470956 mm</code></pre>
+<pre><code>
+Mean annual mass balance: 599.8892260672653 mm
+Standard deviation of MB: 140.7659839763515 mm</code></pre>
 </div>
 </div>
 </section>
@@ -648,184 +625,7 @@ Standard deviation of MB: 141.67777830470956 mm</code></pre>
 <span id="cb4-17"><a href=""></a>chain <span class="op">=</span> <span class="fu">sample</span>(model, <span class="fu">NUTS</span>(<span class="fl">0.65</span>), <span class="fl">1000</span>, progress<span class="op">=</span><span class="cn">false</span>);</span>
 <span id="cb4-18"><a href=""></a><span class="fu">summarystats</span>(chain)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Precompiling Turing...
-    779.4 ms  ✓ SimpleUnPack
-    787.9 ms  ✓ CommonSolve
-    815.0 ms  ✓ NaturalSort
-    807.9 ms  ✓ CompositionsBase
-    859.8 ms  ✓ ScientificTypesBase
-    976.0 ms  ✓ RealDot
-   1049.9 ms  ✓ ArgCheck
-   1085.0 ms  ✓ RuntimeGeneratedFunctions
-   1200.8 ms  ✓ ChangesOfVariables
-   1295.1 ms  ✓ PositiveFactorizations
-    897.9 ms  ✓ DefineSingletons
-   1616.4 ms  ✓ ADTypes
-    872.1 ms  ✓ FastClosures
-    966.7 ms  ✓ InvertedIndices
-   1893.2 ms  ✓ FunctionWrappers
-   1200.3 ms  ✓ LRUCache
-   2155.1 ms  ✓ Combinatorics
-   2358.7 ms  ✓ InitialValues
-   1165.1 ms  ✓ GPUArraysCore
-   1348.5 ms  ✓ SparseInverseSubset
-   1367.4 ms  ✓ ArrayInterface
-   2475.9 ms  ✓ RandomNumbers
-    865.4 ms  ✓ InplaceOps
-   1164.4 ms  ✓ ConsoleProgressMonitor
-   1775.0 ms  ✓ TerminalLoggers
-   1616.2 ms  ✓ Functors
-   1423.9 ms  ✓ L_BFGS_B_jll
-   3267.0 ms  ✓ UnsafeAtomics
-    962.3 ms  ✓ CompositionsBase → CompositionsBaseInverseFunctionsExt
-   1122.1 ms  ✓ StatisticalTraits
-   1012.9 ms  ✓ ChangesOfVariables → ChangesOfVariablesInverseFunctionsExt
-   1482.2 ms  ✓ DensityInterface
-   2262.5 ms  ✓ SplittablesBase
-   3003.7 ms  ✓ Baselet
-   1959.7 ms  ✓ ZygoteRules
-    978.9 ms  ✓ LogExpFunctions → LogExpFunctionsChangesOfVariablesExt
-   1975.4 ms  ✓ LogDensityProblems
-   1075.2 ms  ✓ ADTypes → ADTypesChainRulesCoreExt
-    928.8 ms  ✓ ADTypes → ADTypesConstructionBaseExt
-    885.2 ms  ✓ FunctionWrappersWrappers
-    943.7 ms  ✓ LRUCache → SerializationExt
-   2144.0 ms  ✓ DifferentiationInterface
-   2459.5 ms  ✓ ChangesOfVariables → ChangesOfVariablesTestExt
-    937.9 ms  ✓ ArrayInterface → ArrayInterfaceGPUArraysCoreExt
-    916.8 ms  ✓ ArrayInterface → ArrayInterfaceStaticArraysCoreExt
-    997.3 ms  ✓ ArrayInterface → ArrayInterfaceChainRulesCoreExt
-   1735.1 ms  ✓ Libtask
-   3439.4 ms  ✓ LLVMExtra_jll
-   1305.1 ms  ✓ ArrayInterface → ArrayInterfaceSparseArraysExt
-    976.7 ms  ✓ SciMLStructures
-   2667.6 ms  ✓ SparseMatrixColorings
-   2947.3 ms  ✓ NamedArrays
-   4976.9 ms  ✓ StringManipulation
-   1428.7 ms  ✓ Atomix
-   1492.1 ms  ✓ LBFGSB
-   1250.9 ms  ✓ LogDensityProblemsAD
-   1321.3 ms  ✓ DifferentiationInterface → DifferentiationInterfaceChainRulesCoreExt
-   2310.7 ms  ✓ Random123
-   1798.4 ms  ✓ DifferentiationInterface → DifferentiationInterfaceStaticArraysExt
-   2146.7 ms  ✓ MLJModelInterface
-   1419.1 ms  ✓ DifferentiationInterface → DifferentiationInterfaceSparseArraysExt
-   2939.5 ms  ✓ Optimisers
-   2621.2 ms  ✓ Distributions → DistributionsDensityInterfaceExt
-   1476.4 ms  ✓ FiniteDiff
-   1159.6 ms  ✓ LogDensityProblemsAD → LogDensityProblemsADADTypesExt
-   1715.6 ms  ✓ DifferentiationInterface → DifferentiationInterfaceSparseMatrixColoringsExt
-    914.8 ms  ✓ DifferentiationInterface → DifferentiationInterfaceFiniteDiffExt
-    969.0 ms  ✓ FiniteDiff → FiniteDiffSparseArraysExt
-    986.9 ms  ✓ LogDensityProblemsAD → LogDensityProblemsADDifferentiationInterfaceExt
-   1131.0 ms  ✓ FiniteDiff → FiniteDiffStaticArraysExt
-   4041.0 ms  ✓ Accessors
-   1289.2 ms  ✓ Accessors → AccessorsStructArraysExt
-   1368.7 ms  ✓ Accessors → AccessorsIntervalSetsExt
-   1401.6 ms  ✓ Accessors → AccessorsTestExt
-   1432.0 ms  ✓ Accessors → AccessorsDatesExt
-   3327.2 ms  ✓ MCMCDiagnosticTools
-   8898.6 ms  ✓ ForwardDiff
-   1813.0 ms  ✓ Accessors → AccessorsStaticArraysExt
-   2004.5 ms  ✓ BangBang
-   9308.8 ms  ✓ SparseConnectivityTracer
-   2913.7 ms  ✓ SymbolicIndexingInterface
-   1676.8 ms  ✓ LogDensityProblemsAD → LogDensityProblemsADForwardDiffExt
-   1206.3 ms  ✓ BangBang → BangBangTablesExt
-   1288.6 ms  ✓ BangBang → BangBangStructArraysExt
-   1845.7 ms  ✓ DifferentiationInterface → DifferentiationInterfaceForwardDiffExt
-   1360.0 ms  ✓ BangBang → BangBangChainRulesCoreExt
-   2173.3 ms  ✓ ForwardDiff → ForwardDiffStaticArraysExt
-   3703.5 ms  ✓ SciMLOperators
-   1735.9 ms  ✓ BangBang → BangBangStaticArraysExt
-   2265.9 ms  ✓ NLSolversBase
-   1386.9 ms  ✓ MicroCollections
-   1033.5 ms  ✓ SciMLOperators → SciMLOperatorsStaticArraysCoreExt
-   2096.7 ms  ✓ SparseConnectivityTracer → SparseConnectivityTracerNaNMathExt
-   1907.3 ms  ✓ SparseConnectivityTracer → SparseConnectivityTracerLogExpFunctionsExt
-   1479.1 ms  ✓ SciMLOperators → SciMLOperatorsSparseArraysExt
-   2450.1 ms  ✓ SparseConnectivityTracer → SparseConnectivityTracerSpecialFunctionsExt
-  12250.8 ms  ✓ ChainRules
-   6710.5 ms  ✓ Roots
-   3440.0 ms  ✓ RecursiveArrayTools
-   3117.0 ms  ✓ LineSearches
-   1103.6 ms  ✓ Roots → RootsChainRulesCoreExt
-   1151.7 ms  ✓ ArrayInterface → ArrayInterfaceChainRulesExt
-   1294.9 ms  ✓ RecursiveArrayTools → RecursiveArrayToolsStructArraysExt
-   1374.7 ms  ✓ Roots → RootsForwardDiffExt
-   4078.5 ms  ✓ Transducers
-   1544.8 ms  ✓ RecursiveArrayTools → RecursiveArrayToolsForwardDiffExt
-   1639.5 ms  ✓ RecursiveArrayTools → RecursiveArrayToolsSparseArraysExt
-    849.9 ms  ✓ Transducers → TransducersAdaptExt
-  13145.3 ms  ✓ LLVM
-   2564.8 ms  ✓ AbstractMCMC
-   5431.9 ms  ✓ DistributionsAD
-   5556.5 ms  ✓ Optim
-   2168.2 ms  ✓ SSMProblems
-   2371.9 ms  ✓ AbstractPPL
-   2388.2 ms  ✓ EllipticalSliceSampling
-   3039.5 ms  ✓ UnsafeAtomicsLLVM
-   5691.3 ms  ✓ Bijectors
-   3166.4 ms  ✓ AdvancedMH
-   2049.8 ms  ✓ DistributionsAD → DistributionsADForwardDiffExt
-   4535.3 ms  ✓ AdvancedHMC
-   1953.3 ms  ✓ Bijectors → BijectorsForwardDiffExt
-   2061.6 ms  ✓ Bijectors → BijectorsDistributionsADExt
-   2559.1 ms  ✓ AdvancedPS
-   2132.8 ms  ✓ AdvancedMH → AdvancedMHForwardDiffExt
-   2618.4 ms  ✓ AdvancedMH → AdvancedMHStructArraysExt
-   2828.5 ms  ✓ AdvancedPS → AdvancedPSLibtaskExt
-  28913.2 ms  ✓ MLStyle
-   6795.1 ms  ✓ KernelAbstractions
-   1853.3 ms  ✓ KernelAbstractions → LinearAlgebraExt
-   1945.5 ms  ✓ StructArrays → StructArraysGPUArraysCoreExt
-   2094.0 ms  ✓ KernelAbstractions → SparseArraysExt
-  13770.3 ms  ✓ DynamicPPL
-  30756.3 ms  ✓ PrettyTables
-   8674.7 ms  ✓ Expronicon
-   2246.4 ms  ✓ DynamicPPL → DynamicPPLForwardDiffExt
-   2287.0 ms  ✓ DynamicPPL → DynamicPPLChainRulesCoreExt
-   8139.5 ms  ✓ NNlib
-   3240.9 ms  ✓ DynamicPPL → DynamicPPLZygoteRulesExt
-   3467.0 ms  ✓ MCMCChains
-   2002.0 ms  ✓ NNlib → NNlibForwardDiffExt
-   2068.8 ms  ✓ NNlib → NNlibFFTWExt
-   2873.9 ms  ✓ SparseConnectivityTracer → SparseConnectivityTracerNNlibExt
-   2589.8 ms  ✓ AdvancedMH → AdvancedMHMCMCChainsExt
-   2595.9 ms  ✓ AdvancedHMC → AdvancedHMCMCMCChainsExt
-   2873.3 ms  ✓ DynamicPPL → DynamicPPLMCMCChainsExt
-   5594.9 ms  ✓ Tracker
-   2496.0 ms  ✓ ArrayInterface → ArrayInterfaceTrackerExt
-   2518.4 ms  ✓ DifferentiationInterface → DifferentiationInterfaceTrackerExt
-   2642.5 ms  ✓ LogDensityProblemsAD → LogDensityProblemsADTrackerExt
-   2692.6 ms  ✓ RecursiveArrayTools → RecursiveArrayToolsTrackerExt
-   2855.9 ms  ✓ Tracker → TrackerPDMatsExt
-  12131.5 ms  ✓ SciMLBase
-   1079.4 ms  ✓ SciMLBase → SciMLBaseChainRulesCoreExt
-   4232.9 ms  ✓ DistributionsAD → DistributionsADTrackerExt
-   4295.3 ms  ✓ Bijectors → BijectorsTrackerExt
-   2102.8 ms  ✓ OptimizationBase
-    402.1 ms  ✓ OptimizationBase → OptimizationFiniteDiffExt
-    636.5 ms  ✓ OptimizationBase → OptimizationForwardDiffExt
-   2420.2 ms  ✓ AdvancedVI
-   1782.0 ms  ✓ Optimization
-  13007.6 ms  ✓ OptimizationOptimJL
-   5265.7 ms  ✓ Turing
-   3998.0 ms  ✓ Turing → TuringOptimExt
-  163 dependencies successfully precompiled in 77 seconds. 146 already precompiled.
-Precompiling IntervalArithmeticForwardDiffExt...
-    566.0 ms  ✓ IntervalArithmetic → IntervalArithmeticForwardDiffExt
-  1 dependency successfully precompiled in 1 seconds. 43 already precompiled.
-Precompiling AccessorsUnitfulExt...
-    572.2 ms  ✓ Accessors → AccessorsUnitfulExt
-  1 dependency successfully precompiled in 1 seconds. 17 already precompiled.
-Precompiling SciMLBaseMakieExt...
-   7173.4 ms  ✓ SciMLBase → SciMLBaseMakieExt
-  1 dependency successfully precompiled in 8 seconds. 303 already precompiled.
-Precompiling SparseMatrixColoringsColorsExt...
-    708.4 ms  ✓ SparseMatrixColorings → SparseMatrixColoringsColorsExt
-  1 dependency successfully precompiled in 1 seconds. 29 already precompiled.
-┌ Info: Found initial step size
+<pre><code>┌ Info: Found initial step size
 └   ϵ = 0.8</code></pre>
 </div>
 <div id="bayes-inversion" class="cell-output cell-output-display" data-execution_count="1">
@@ -833,8 +633,8 @@ Precompiling SparseMatrixColoringsColorsExt...
   parameters       mean       std      mcse   ess_bulk   ess_tail      rhat    ⋯
       Symbol    Float64   Float64   Float64    Float64    Float64   Float64    ⋯
 
-           P   931.1851   77.7771    3.0184   667.4814   732.8070    1.0013    ⋯
-           T     2.3325    0.4208    0.0205   433.3266   519.0758    1.0046    ⋯
+           P   939.3577   83.2384    3.3017   636.0481   690.5014    1.0022    ⋯
+           T     2.3430    0.4160    0.0175   578.7648   506.7059    1.0044    ⋯
                                                                 1 column omitted</code></pre>
 </div>
 </div>
