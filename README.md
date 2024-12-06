@@ -2,10 +2,12 @@
 
 [![Build Status](https://github.com/mauro3/BayesianCrashCourseVAW.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/mauro3/BayesianCrashCourseVAW.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 
-This is a short workshop I gave at VAW on Bayesian inference.  Strucutre:
+This is a short workshop I gave at VAW on Bayesian inference.  Structure:
 
-- 1h lecture with [slides](BayesianCrashCourseVAW-website/bayesian-crash-course-vaw.html)
+- 1h lecture with [slides](https://mauro3.github.io/BayesianCrashCourseVAW.jl)
 - 1/2 day of hands-on
+  - Julia scripts
+  - Jupyter notebooks
 
 # Lecture
 
