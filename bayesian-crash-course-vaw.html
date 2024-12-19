@@ -6,8 +6,8 @@
 <script src="bayesian-crash-course-vaw_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="bayesian-crash-course-vaw_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="bayesian-crash-course-vaw_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="bayesian-crash-course-vaw_files/libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.6.39">
+<link href="bayesian-crash-course-vaw_files/libs/quarto-html/quarto-syntax-highlighting-b663525e4b92bb903b2199e2d401bf36.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.6.38">
 
   <meta name="author" content="Mauro Werder">
   <title>Crash course in Bayesian inversion</title>
@@ -492,8 +492,8 @@ Mauro Werder
 <span id="cb1-24"><a href=""></a><span class="fu">println</span>(<span class="st">"Standard deviation of MB: </span><span class="sc">$</span>(std_mb)<span class="st"> mm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-Mean annual mass balance: 599.8892260672653 mm
-Standard deviation of MB: 140.7659839763515 mm</code></pre>
+Mean annual mass balance: 599.4495332173688 mm
+Standard deviation of MB: 143.1536843819519 mm</code></pre>
 </div>
 </div>
 </section>
@@ -626,15 +626,15 @@ Standard deviation of MB: 140.7659839763515 mm</code></pre>
 <span id="cb4-18"><a href=""></a><span class="fu">summarystats</span>(chain)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>┌ Info: Found initial step size
-└   ϵ = 0.8</code></pre>
+└   ϵ = 1.6</code></pre>
 </div>
 <div id="bayes-inversion" class="cell-output cell-output-display" data-execution_count="1">
 <pre><code>Summary Statistics
   parameters       mean       std      mcse   ess_bulk   ess_tail      rhat    ⋯
       Symbol    Float64   Float64   Float64    Float64    Float64   Float64    ⋯
 
-           P   939.3577   83.2384    3.3017   636.0481   690.5014    1.0022    ⋯
-           T     2.3430    0.4160    0.0175   578.7648   506.7059    1.0044    ⋯
+           P   932.8217   80.6855    2.9857   728.2007   598.7228    1.0000    ⋯
+           T     2.3136    0.3919    0.0144   736.6765   732.3138    1.0035    ⋯
                                                                 1 column omitted</code></pre>
 </div>
 </div>
