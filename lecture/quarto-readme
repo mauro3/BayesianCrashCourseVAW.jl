@@ -1,0 +1,17 @@
+(1) To run quarto do
+
+`quarto preview bayesian-crash-course-vaw.qmd`
+
+this will open a tab in Firefox.
+
+(2) To compile it to html, use
+
+`quarto render bayesian-crash-course-vaw.qmd --to html`
+
+(3) to publish it to gh-pages (this will automatically push to github after the build)
+
+`quarto publish gh-pages bayesian-crash-course-vaw.qmd`
+
+(4) compile it via github actions, hand trigger the workflow at:
+
+https://github.com/mauro3/BayesianCrashCourseVAW.jl/actions/workflows/render-qmd.yaml
