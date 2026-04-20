@@ -40,7 +40,7 @@ jobs:
 
       # From https://github.com/julia-actions/setup-julia
       - name: Setup Julia
-        uses: julia-actions/setup-julia@v2
+        uses: julia-actions/setup-julia@v3
       - name: Activate Julia environment
         run: |
           julia --project=lecture -e 'using Pkg; Pkg.instantiate()'
